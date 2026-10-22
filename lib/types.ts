@@ -1,0 +1,10 @@
+export type Court = { id: string; name: string; is_active: boolean };
+export type OperatingHours = { day_of_week: number; open_time: string; close_time: string };
+export type Profile = { id: string; full_name: string | null; phone: string | null; is_admin: boolean; created_at?: string };
+export type BookingStatus = "confirmed" | "cancelled" | "no_show" | "paid";
+export type Booking = { id: string; user_id: string; court_id: string; start_time: string; end_time: string; status: BookingStatus; notes: string | null; created_at: string };
+export type UnavailableSlot = { court_id: string; start_time: string; end_time: string; kind: "booking" | "blocked" };
+export type BlockedSlot = { id: string; court_id: string; start_time: string; end_time: string; reason: string };
+export type Availability = { courts: Court[]; hours: OperatingHours[]; unavailable: UnavailableSlot[]; date: string; fetchedAt: string };
+export type ActionResult<T = undefined> = { ok: true; data: T; warning?: string } | { ok: false; error: string; code?: string };
+export type AdminData = { courts: Court[]; hours: OperatingHours[]; bookings: Booking[]; blocks: BlockedSlot[]; profiles: Profile[] };

@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# Netlify automatically installs its Next.js adapter for supported Next.js apps.
+# Supabase and Resend keys belong in Netlify's environment settings, not here.

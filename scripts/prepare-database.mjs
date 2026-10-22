@@ -1,0 +1,12 @@
+import { readFileSync, writeFileSync } from "node:fs";
+const config = readFileSync(new URL("../lib/config.ts", import.meta.url), "utf8");
+const match = config.match(/\/\* rules:start \*\/([\s\S]*?)\/\* rules:end \*\//);
+if (!match) throw new Error("Cannot find the booking rules in lib/config.ts.");
+const rules = JSON.parse(match[1]);
+if (rules.slotMinutes !== 60 || !Array.isArray(rules.durations) || !rules.durations.length || rules.durations.some((value) => !Number.isInteger(value) || value < 1 || value > 12)) throw new Error("Rules must use whole-hour slots and positive whole-hour durations.");
+for (const key of ["advanceDays", "minimumLeadHours", "maxUpcomingBookings", "freeCancellationHours"]) if (!Number.isInteger(rules[key]) || rules[key] < 1) throw new Error(`Invalid rule: ${key}`);
+const substitutions = { __DURATIONS__: rules.durations.join(","), __ADVANCE_DAYS__: rules.advanceDays, __LEAD_HOURS__: rules.minimumLeadHours, __MAX_UPCOMING__: rules.maxUpcomingBookings, __CANCEL_HOURS__: rules.freeCancellationHours, __RULES_JSON__: JSON.stringify(rules) };
+let sql = readFileSync(new URL("../supabase/booking-guards.template.sql", import.meta.url), "utf8");
+for (const [token, value] of Object.entries(substitutions)) sql = sql.replaceAll(token, String(value));
+writeFileSync(new URL("../supabase/001_booking_guards.sql", import.meta.url), sql);
+console.log("Prepared supabase/001_booking_guards.sql from lib/config.ts. This command does not change the database.");

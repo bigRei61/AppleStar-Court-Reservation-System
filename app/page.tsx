@@ -1,69 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, ArrowUpRight, CalendarDays, Check, Clock3, HeartHandshake, MapPin, ShieldCheck, Wallet } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { QuickBook, TodayPreview, VenueHours } from "@/components/home";
+import { venue } from "@/lib/config";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
-}
+export default function Home() { return <div className="home"><section className="hero"><Image className="hero-photo" src="/images/pickleball-court.png" alt="A green pickleball court surrounded by tropical trees in afternoon light" fill priority sizes="100vw" /><div className="hero-inner"><div className="hero-content"><p className="eyebrow">YOUR COURT. YOUR COMMUNITY.</p><h1>GOOD GAMES.<br /><em>GREAT<br />COMPANY.</em></h1><p className="hero-description">A first serve. A friendly rivalry. One more game.<br />Make room for the moments that move you.</p><div className="hero-actions"><Button asChild size="lg"><Link href="/book">Book a court <ArrowUpRight size={18} /></Link></Button><Link href="#the-venue" className="text-action">Meet StarApple <ArrowRight size={15} /></Link></div><p className="hero-footnote"><ShieldCheck size={13} /> Book in a few taps. Pay when you play.</p></div></div><div className="hero-court-tag">WELCOME TO STARAPPLE PICKLEBALL</div></section><div className="home-content"><QuickBook /><section className="home-section"><div className="section-heading"><div><p className="eyebrow">THERE’S ALWAYS TIME FOR A GAME</p><h2>On the court today.</h2></div><Link href="/book" className="section-link">All court times <ArrowUpRight size={16} /></Link></div><TodayPreview /></section><section className="home-section"><div className="section-heading"><div><p className="eyebrow">LESS FRICTION. MORE PICKLEBALL.</p><h2>Just show up. We’ll see you there.</h2></div></div><div className="home-features">{[{ icon: CalendarDays, title: "Pick your perfect hour.", text: "Early rally or evening reset? See live availability, choose your court, and book 1 to 3 hours. It’s that easy." }, { icon: Wallet, title: "Reserve now. Pay here.", text: "Keep your wallet in your pocket for now. Settle in at the venue with cash, card, or GCash before your game." }, { icon: HeartHandshake, title: "All levels. All welcome.", text: "First-time player or a regular at the net, there’s a place for you here. Bring your people and a little good energy." }].map(({ icon: Icon, title, text }, i) => <article className="home-feature" key={title}><div className="feature-number"><span>0{i + 1}</span><Icon size={23} strokeWidth={1.4} /></div><h3>{title}</h3><p>{text}</p></article>)}</div></section><section className="home-section venue-section" id="the-venue"><div className="venue-art" aria-hidden="true"><div className="court-art"><div className="court-net" /><div className="court-ball" /></div><span className="venue-art-caption">A LITTLE COURT. A LOT OF POSSIBILITIES.</span></div><div className="venue-copy"><p className="eyebrow">WELCOME TO THE NEIGHBORHOOD</p><h2>Your new<br />happy place.</h2><p>Step away from the everyday. Step onto the court.<br />StarApple is a place to play a little harder, laugh a little louder, and come back for one more.</p><div className="venue-info"><MapPin size={18} /><div><strong>{venue.name}</strong><span>{venue.address}</span></div></div><div className="venue-info"><Clock3 size={18} /><div><strong>Make a little time for play</strong><VenueHours /></div></div><a href={venue.mapUrl} target="_blank" rel="noreferrer" className="section-link">Get directions <ArrowUpRight size={16} /></a></div></section><section className="closing-cta"><p className="eyebrow" style={{ justifyContent: "center", color: "#536d37" }}>THE GROUP CHAT CAN WAIT</p><h2>Less “we should play.”<br />More “see you on court.”</h2><Button asChild size="lg"><Link href="/book">Find your next game <ArrowUpRight size={18} /></Link></Button><p style={{ fontSize: 10, margin: "17px 0 0", opacity: .7, display: "flex", justifyContent: "center", gap: 6, alignItems: "center" }}><Check size={12} /> Free cancellation up to 12 hours before your game</p></section></div></div>; }
