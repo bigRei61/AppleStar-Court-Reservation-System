@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { ArrowRight, Check, Eye, EyeOff, Mail } from "lucide-react";
@@ -22,13 +22,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const next = safeNext(params.get("next"));
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [sentEmail, setSentEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
   const [googleBusy, setGoogleBusy] = useState(false);
   const { register, handleSubmit, setError: setFieldError, control, formState: { errors, isSubmitting } } = useForm<Fields>({ defaultValues: { full_name: "", phone: "", email: "", password: "", confirm: "", agree: false } });
   const password = useWatch({ control, name: "password" }) || "";
-  useEffect(() => { if (!cooldown) return; const timer = setTimeout(() => setCooldown((n) => n - 1), 1000); return () => clearTimeout(timer); }, [cooldown]);
   const callback = (destination = next) => `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination)}`;
 
   async function submit(values: Fields) {
@@ -45,38 +42,33 @@ export function AuthForm({ mode }: { mode: Mode }) {
     try {
       const supabase = createClient();
       if (mode === "signup") {
-        const { data, error: signupError } = await supabase.auth.signUp({ email: values.email.trim(), password: values.password, options: { data: { full_name: values.full_name.trim(), phone: normalizePhone(values.phone) }, emailRedirectTo: callback() } });
+        const { data, error: signupError } = await supabase.auth.signUp({ email: values.email.trim(), password: values.password, options: { data: { full_name: values.full_name.trim(), phone: normalizePhone(values.phone) } } });
         if (signupError) { setError(signupError.status === 429 ? "A few too many tries. Please wait a moment and try again." : "We couldn’t create your account. Try again, or log in if you already have one."); return; }
         if (data.session) { router.push(next); router.refresh(); return; }
-        setSentEmail(values.email.trim()); setSent(true); setCooldown(30);
+        setError("We couldn’t finish signing you in. Please try logging in or contact the venue for help.");
       } else if (mode === "login") {
         const { data, error: loginError } = await supabase.auth.signInWithPassword({ email: values.email.trim(), password: values.password });
         if (loginError) { setError("That email or password isn’t right. Try again or reset your password."); return; }
         const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", data.user.id).single();
         router.push(params.has("next") ? next : profile?.is_admin ? "/admin" : "/book"); router.refresh();
       } else if (mode === "forgot") {
-        await supabase.auth.resetPasswordForEmail(values.email.trim(), { redirectTo: callback("/reset-password") });
+        const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(values.email.trim(), { redirectTo: callback("/reset-password") });
+        if (recoveryError) { setError(recoveryError.status === 429 ? "Too many reset requests. Please wait before trying again." : "We couldn’t send a reset link right now. Please try again later or contact the venue."); return; }
         setSent(true);
       } else {
         const { error: resetError } = await supabase.auth.updateUser({ password: values.password });
         if (resetError) { setError("This reset link may have expired. Request a new link and try again."); return; }
         router.push("/account?password=updated"); router.refresh();
       }
-    } catch { if (mode === "forgot") setSent(true); else setError("We couldn’t connect. Your details are still here—please try again."); }
+    } catch { setError("We couldn’t connect. Your details are still here—please try again."); }
   }
   async function google() {
     setGoogleBusy(true); setError("");
     try { const { error } = await createClient().auth.signInWithOAuth({ provider: "google", options: { redirectTo: callback() } }); if (error) { setError("Google sign-in is unavailable. Please use email instead."); setGoogleBusy(false); } }
     catch { setError("We couldn’t connect to Google. Please try email instead."); setGoogleBusy(false); }
   }
-  async function resend() {
-    if (cooldown) return;
-    setCooldown(30); setError("");
-    try { const { error } = await createClient().auth.resend({ type: "signup", email: sentEmail, options: { emailRedirectTo: callback() } }); if (error) setError("We couldn’t resend yet. Please wait a moment and try again."); }
-    catch { setError("We couldn’t connect. Please try again."); }
-  }
   const [eyebrow, title, description, submitLabel] = labels[mode];
-  if (sent) return <div className="auth-form"><div className="success-symbol" style={{ marginLeft: 0 }}><Mail size={27} /></div><p className="eyebrow">ONE LITTLE CHECK</p><h1>Check your email.</h1><p>{mode === "signup" ? <>We sent a link to <strong>{sentEmail}</strong>. Tap it to activate your account. Your court selection will be waiting.</> : "If that email has an account, we sent a reset link. Check your inbox and spam folder."}</p>{error && <Message error>{error}</Message>}{mode === "signup" ? <><Button className="full-width" variant="outline" onClick={resend} disabled={cooldown > 0}>Resend email {cooldown > 0 && `in ${cooldown}s`}</Button><Button variant="ghost" className="full-width" onClick={() => { setSent(false); setError(""); }}>Use a different email</Button></> : <Button asChild className="full-width"><Link href="/login">Back to log in</Link></Button>}</div>;
+  if (sent) return <div className="auth-form"><div className="success-symbol" style={{ marginLeft: 0 }}><Mail size={27} /></div><p className="eyebrow">LET’S GET YOU BACK IN</p><h1>Check your email.</h1><p>If that email has an account, you’ll receive a reset link. Check your inbox and spam folder, and open the latest link in this browser.</p><Button asChild className="full-width"><Link href="/login">Back to log in</Link></Button></div>;
   return <div className="auth-form"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{description}</p>{params.get("error") && <Message error>That link has expired or couldn’t be verified. Please try again.</Message>}{params.get("next") === "/book" && <Message>Your court selection is saved. Log in to finish booking.</Message>}{error && <Message error>{error}</Message>}<form onSubmit={handleSubmit(submit)} noValidate>
     {mode === "signup" && <><div className="field"><label htmlFor="full_name">Full name</label><Input id="full_name" autoComplete="name" maxLength={100} placeholder="Juan dela Cruz" aria-invalid={Boolean(errors.full_name)} aria-describedby="full-name-error" {...register("full_name")} /><FieldError id="full-name-error" message={errors.full_name?.message} /></div><div className="field"><label htmlFor="phone">Mobile number</label><Input id="phone" type="tel" autoComplete="tel" placeholder="0917 123 4567" aria-invalid={Boolean(errors.phone)} aria-describedby="phone-error" {...register("phone")} /><FieldError id="phone-error" message={errors.phone?.message} /></div></>}
     {mode !== "reset" && <div className="field"><label htmlFor="email">Email address</label><Input id="email" type="email" autoComplete="email" maxLength={254} placeholder="you@example.com" aria-invalid={Boolean(errors.email)} aria-describedby="email-error" {...register("email")} /><FieldError id="email-error" message={errors.email?.message} /></div>}

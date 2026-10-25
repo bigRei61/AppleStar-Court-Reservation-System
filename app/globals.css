@@ -289,7 +289,8 @@ table { border-collapse:collapse; text-align:left; width:100%; font-size:12px; }
 th,td { padding:15px 17px; border-bottom:1px solid var(--border); vertical-align:middle; }
 th { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); background:var(--background); white-space:nowrap; }
 tr:last-child td { border-bottom:0; }
-td input { min-width:100px; }
+td input:not([type="checkbox"]) { min-width:100px; }
+td input[type="checkbox"] { min-width:20px; }
 .table-controls { display:flex; gap:12px; flex-wrap:wrap; margin:20px 0; }
 .table-controls .ui-input { max-width:300px; }
 .admin-two-col { display:grid; grid-template-columns:350px 1fr; gap:25px; align-items:start; }
@@ -326,7 +327,7 @@ td input { min-width:100px; }
 }
 @media (min-width:1600px) { .hero { min-height:710px; } }
 @media (max-width:1050px) { .desktop-nav { gap:17px; }.nav-inner { width:calc(100% - 48px); gap:22px; }.hero-content { width:60%; }.quick-book { gap:20px; grid-template-columns:1fr 1fr auto; }.quick-book-intro { display:none; }.booking-layout { grid-template-columns:minmax(0,1fr) 250px; }.today-grid { grid-template-columns:repeat(2,1fr); }.admin-two-col { grid-template-columns:300px 1fr; } }
-@media (max-width:760px) {
+@media (max-width:900px) {
   body { padding-bottom:72px; }.site-header { height:76px; }.nav-inner { width:calc(100% - 40px); }.brand { font-size:20px; }.brand-symbol { width:33px; height:33px; padding:7px; gap:3px; }.brand small { font-size:7px; letter-spacing:2.7px; }.desktop-nav { display:none; }.nav-account { padding:8px 11px; font-size:11px; }.nav-account>svg:last-child { display:none; }
   .mobile-tabs { display:flex; position:fixed; z-index:40; left:0; right:0; bottom:0; min-height:70px; padding:8px 12px max(10px,env(safe-area-inset-bottom)); background:var(--card); color:var(--muted); border-top:1px solid var(--border); justify-content:space-around; }.mobile-tabs a { min-width:54px; min-height:48px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:9px; }.mobile-tabs a.active { color:#648539; font-weight:700; }.mobile-tabs a.active svg { stroke-width:2.5; }
   .page-width,.home-content { width:calc(100% - 36px); padding-top:32px; }.home-content { padding-top:0; }.page-heading { margin-bottom:25px; }.page-heading h1 { font-size:33px; }.page-heading p { font-size:13px; }.panel { padding:22px; }
@@ -337,5 +338,155 @@ td input { min-width:100px; }
   .admin-topline h1 { font-size:30px; }.admin-stats { gap:9px; }.stat-card { padding:13px; }.stat-card strong { font-size:25px; }.stat-card span { font-size:9px; }.admin-courts,.admin-two-col { grid-template-columns:1fr; }.admin-nav a { padding:8px 10px; font-size:11px; }.calendar-grid { grid-template-columns:repeat(var(--days),170px); }.table-controls .ui-input { max-width:100%; }.button-row .ui-button { white-space:normal; }.skeleton-title { width:75%; }
 }
 @media (max-width:375px) { .hero h1 { font-size:57px; }.hero-actions { gap:15px; }.hero-actions .ui-button { padding:13px 19px; }.hero-actions .text-action { font-size:11px; }.slot { flex-direction:column; align-items:flex-start; gap:4px; }.nav-account>svg { display:none; } }
-@media (max-width:760px) { body { padding-bottom:calc(72px + env(safe-area-inset-bottom,0px)); } .mobile-tabs { min-height:calc(70px + env(safe-area-inset-bottom,0px)); padding-bottom:calc(10px + env(safe-area-inset-bottom,0px)); } .sticky-summary { bottom:calc(70px + env(safe-area-inset-bottom,0px)); } }
-@media (max-width:760px) and (prefers-color-scheme:dark) { .mobile-tabs a.active { color:var(--primary); } }
+@media (max-width:900px) { body { padding-bottom:calc(72px + env(safe-area-inset-bottom,0px)); } .mobile-tabs { min-height:calc(70px + env(safe-area-inset-bottom,0px)); padding-bottom:calc(10px + env(safe-area-inset-bottom,0px)); } .sticky-summary { bottom:calc(70px + env(safe-area-inset-bottom,0px)); } }
+@media (max-width:900px) and (prefers-color-scheme:dark) { .mobile-tabs a.active { color:var(--primary); } }
+
+/* Let scrollable children shrink inside grid and flex layouts. */
+main,.page-width,.home-content,.booking-layout,.date-strip,.table-wrap,.calendar-scroll { min-width:0; max-width:100%; }
+.booking-layout>*,.account-grid>*,.form-grid>*,.admin-two-col>*,.admin-courts>*,.home-features>*,.venue-section>* { min-width:0; }
+.booking-card-info,.booking-card-actions,.summary-line>div,.review-note>div,.block-card>div { min-width:0; overflow-wrap:anywhere; }
+.message,.field-hint,.field-error,.timeline-item,.footer-inner,.auth-form-footer { overflow-wrap:anywhere; }
+.date-strip { width:100%; overscroll-behavior-x:contain; }
+.calendar-scroll { overflow-x:auto; padding-bottom:15px; overscroll-behavior-x:contain; scroll-snap-type:x proximity; }
+.calendar-day { min-width:0; scroll-snap-align:start; }
+.calendar-grid[data-view="day"] { grid-template-columns:minmax(0,1fr); min-width:0; }
+.mobile-only { display:none; }
+
+@media (max-width:1000px) {
+  .booking-layout { grid-template-columns:minmax(0,1fr); }
+  .booking-aside { display:none; }
+}
+
+@media (max-width:900px) {
+  :root { --mobile-nav-height:72px; --booking-summary-height:112px; }
+  html { scroll-padding-top:24px; scroll-padding-bottom:calc(var(--mobile-nav-height) + 24px + env(safe-area-inset-bottom,0px)); }
+  body { padding-bottom:calc(var(--mobile-nav-height) + env(safe-area-inset-bottom,0px)); }
+  .page-width,.home-content,.hero-inner,.nav-inner,.footer-inner { width:calc(100% - max(16px,env(safe-area-inset-left,0px)) - max(16px,env(safe-area-inset-right,0px))); }
+  .page-width { padding-top:28px; padding-bottom:40px; }
+  .home-content { padding-top:0; }
+  .page-heading h1 { font-size:clamp(28px,7.5vw,38px); overflow-wrap:anywhere; }
+  .page-heading p { font-size:14px; }
+  .site-header { height:72px; }
+  .nav-inner { gap:12px; }
+  .brand { min-width:0; font-size:19px; gap:9px; }
+  .nav-account { min-height:44px; flex-shrink:0; font-size:12px; padding:9px 12px; }
+  .mobile-tabs { height:calc(var(--mobile-nav-height) + env(safe-area-inset-bottom,0px)); min-height:0; padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px)); }
+  .mobile-tabs a { flex:1; min-width:0; min-height:48px; font-size:11px; line-height:1.3; text-align:center; }
+  .mobile-tabs a span { overflow-wrap:anywhere; }
+  .ui-button,.button-sm { min-height:44px; white-space:normal; line-height:1.4; }
+  .button-icon,.dialog-x { min-width:44px; min-height:44px; }
+  .ui-input,.date-picker input,.quick-field input,.quick-field select { min-width:0; min-height:48px; font-size:16px; }
+  .ui-input { max-width:100%; }
+  input[type="date"],input[type="time"] { appearance:none; -webkit-appearance:none; }
+  .checkbox-line { min-height:44px; align-items:center; padding-block:5px; font-size:13px; }
+  .checkbox-line input { width:22px; height:22px; min-width:22px; margin:0; }
+  .form-grid,.account-grid { grid-template-columns:minmax(0,1fr); }
+  .panel { padding:20px 16px; }
+  .auth-form-wrap { padding:30px 16px 44px; }
+  .auth-form h1 { font-size:clamp(28px,8vw,34px); }
+  .auth-form>p { font-size:14px; }
+  .hero { min-height:0; }
+  .hero-inner { padding:52px 0 90px; }
+  .hero h1 { font-size:clamp(46px,15vw,76px); letter-spacing:-.055em; }
+  .hero-actions { flex-wrap:wrap; gap:12px 20px; }
+  .hero-actions .text-action { min-height:44px; font-size:13px; }
+  .hero-description { font-size:14px; }
+  .quick-book { padding:20px 16px; gap:16px; }
+  .quick-field { min-width:0; }
+  .quick-field label { font-size:11px; }
+  .quick-field input,.quick-field select { padding:10px 12px; border:1px solid #ffffff30; border-radius:5px; }
+  .section-heading { flex-direction:column; align-items:flex-start; gap:12px; }
+  .section-heading h2 { font-size:clamp(27px,7.5vw,34px); }
+  .section-heading .section-link,.venue-copy>.section-link { min-height:44px; margin:0; font-size:13px; white-space:normal; }
+  .today-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .today-slot { min-width:0; padding:16px 12px; }
+  .today-slot strong { font-size:clamp(22px,6vw,27px); }
+  .today-slot-bottom { gap:6px; font-size:11px; }
+  .today-slot-bottom>span { min-width:0; }
+  .home-feature p,.venue-copy>p { font-size:14px; }
+  .footer-links a { min-height:44px; font-size:13px; }
+  .footer-inner { align-items:flex-start; gap:20px; }
+  .booking-layout { grid-template-columns:minmax(0,1fr); }
+  .booking-page { padding-bottom:calc(var(--booking-summary-height) + 30px); }
+  .step-heading { flex-wrap:wrap; gap:9px; }
+  .step-heading h2 { font-size:18px; }
+  .step-heading>.muted { flex-basis:100%; margin-left:32px!important; font-size:11px!important; }
+  .date-picker { min-width:0; }
+  .date-picker input { width:142px; max-width:100%; padding:8px; }
+  .date-chip { flex-basis:62px; min-height:88px; }
+  .date-chip span { font-size:12px; }
+  .date-chip small { font-size:10px; }
+  .booking-toolbar { gap:12px; }
+  .booking-toolbar>.segmented { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); width:100%; }
+  .segmented button { min-height:44px; padding:8px; font-size:12px; }
+  .legend { font-size:11px; gap:14px; }
+  .court-tabs { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); width:100%; }
+  .court-tabs button { min-width:0; }
+  .court-column.mobile-selected { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .slot { min-height:64px; flex-direction:row; align-items:center; gap:6px; padding:12px 10px; }
+  .slot strong { font-size:13px; }
+  .slot span { font-size:11px; }
+  .duration-chip { min-height:44px; font-size:12px; }
+  .sticky-summary { bottom:calc(var(--mobile-nav-height) + env(safe-area-inset-bottom,0px)); padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px)); }
+  .sticky-summary-inner { gap:12px; }
+  .sticky-summary-inner>div { min-width:0; overflow-wrap:anywhere; }
+  .sticky-summary strong { font-size:14px; }
+  .sticky-summary p { max-width:none; font-size:12px; line-height:1.4; }
+  .sticky-summary .ui-button { flex-shrink:0; min-height:48px; font-size:13px; padding:12px 16px; }
+  .dialog-content { width:100%; max-height:calc(100dvh - 16px); padding:28px 16px max(20px,env(safe-area-inset-bottom,0px)); overscroll-behavior:contain; scroll-padding-block:20px; }
+  .dialog-content h2 { font-size:clamp(23px,6.5vw,29px); padding-right:40px; }
+  .dialog-description { font-size:14px; }
+  .dialog-content>.ui-button { min-height:48px; }
+  .summary-line strong { font-size:15px; }
+  .booking-card { display:grid; grid-template-columns:58px minmax(0,1fr); gap:14px; padding:16px; }
+  .booking-date-box { min-width:0; width:58px; }
+  .booking-card-info p { font-size:13px; }
+  .booking-card-actions { grid-column:1/-1; width:100%; padding-left:0; justify-content:flex-start; }
+  .booking-card-actions .ui-button { flex:1; }
+  .rules-section { grid-template-columns:20px minmax(0,1fr); }
+  .admin-nav { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; overflow:visible; }
+  .admin-nav a { min-width:0; min-height:48px; padding:8px; font-size:12px; line-height:1.4; }
+  .admin-stats { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .stat-card { padding:12px 10px; }
+  .stat-card span { font-size:11px; line-height:1.4; display:block; }
+  .admin-topline { gap:14px; }
+  .admin-topline>div { min-width:0; max-width:100%; }
+  .admin-topline .button-row { width:100%; }
+  .table-controls { flex-direction:column; }
+  .table-controls .ui-input { width:100%; max-width:100%!important; }
+  .table-controls>.ui-button { width:100%; }
+  .block-card { padding:16px; gap:12px; }
+  .calendar-grid { grid-template-columns:repeat(var(--days),minmax(250px,1fr)); }
+  .calendar-booking { font-size:12px; padding:12px; }
+  .calendar-day .button-sm { font-size:12px!important; }
+  .mobile-only { display:block; margin-top:8px; }
+  .responsive-table,.responsive-table tbody { display:block; width:100%; }
+  .responsive-table thead { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+  .responsive-table tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:18px 16px; border-bottom:1px solid var(--border); }
+  .responsive-table tr:last-child { border-bottom:0; }
+  .responsive-table td { display:block; min-width:0; padding:0; border:0; font-size:14px; overflow-wrap:anywhere; }
+  .responsive-table td[data-label]::before { content:attr(data-label); display:block; margin-bottom:6px; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+  .responsive-table td input:not([type="checkbox"]) { min-width:0; }
+  .responsive-table td[colspan],.responsive-table td[data-label="Game / reference"],.responsive-table td[data-label="Player"],.responsive-table td[data-label="Court name"],.responsive-table td[data-label="Player name"],.responsive-table td[data-label="Day"],.responsive-table td[data-label="Mobile number"],.responsive-table td[data-label="Quick actions"],.responsive-table td[data-label="History"] { grid-column:1/-1; }
+  .responsive-table td[data-label="Quick actions"] .button-row { gap:8px; }
+  .responsive-table td[data-label="Quick actions"] .ui-button { flex:1; }
+}
+
+@media (max-width:480px) {
+  :root { --booking-summary-height:148px; }
+  .quick-book { grid-template-columns:minmax(0,1fr); }
+  .sticky-summary-inner { flex-direction:column; align-items:stretch; gap:10px; }
+  .sticky-summary .ui-button { width:100%; }
+  .slot { flex-direction:column; align-items:flex-start; gap:5px; }
+  .hero-actions>.ui-button { width:100%; }
+}
+
+@media (max-width:359px) {
+  .court-column.mobile-selected { grid-template-columns:minmax(0,1fr); }
+  .slot { flex-direction:row; align-items:center; }
+  .step-heading .date-picker { flex-basis:100%; margin-left:32px; }
+  .date-picker input { width:100%; }
+  .admin-nav { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .brand { font-size:17px; }
+  .brand small { letter-spacing:2px; }
+}

@@ -1,16 +1,21 @@
 import "server-only";
 import { createClient } from "@/lib/supabase-server";
+import { createPublicClient } from "@/lib/supabase-public";
 import { dayRange } from "@/lib/time";
 import type { AdminData, Availability, Booking, Court, OperatingHours } from "@/lib/types";
 export async function getAvailability(date: string): Promise<Availability> {
-  const client = await createClient();
+  const client = createPublicClient();
+  const signal = AbortSignal.timeout(5000);
   const { from, to } = dayRange(date);
   const [courts, hours, unavailable] = await Promise.all([
-    client.from("courts").select("id,name,is_active").eq("is_active", true).order("name"),
-    client.from("operating_hours").select("day_of_week,open_time,close_time").order("day_of_week"),
-    client.rpc("get_unavailable_slots", { from_ts: from, to_ts: to }),
+    client.from("courts").select("id,name,is_active").eq("is_active", true).order("name").abortSignal(signal),
+    client.from("operating_hours").select("day_of_week,open_time,close_time").order("day_of_week").abortSignal(signal),
+    client.rpc("get_unavailable_slots", { from_ts: from, to_ts: to }).abortSignal(signal),
   ]);
-  if (courts.error || hours.error || unavailable.error) throw new Error("We couldn’t load the court times. Please try again.");
+  if (courts.error || hours.error || unavailable.error) {
+    console.error("Availability read failed", { courts: courts.error?.message, hours: hours.error?.message, unavailable: unavailable.error?.message });
+    throw new Error("We couldn’t load the court times. Please try again.");
+  }
   return { courts: courts.data as Court[], hours: hours.data as OperatingHours[], unavailable: unavailable.data || [], date, fetchedAt: new Date().toISOString() };
 }
 export async function getPlayerBookings(userId: string) {

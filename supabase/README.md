@@ -6,7 +6,10 @@ The app targets the exact five-table schema supplied by the venue owner. It does
 2. Run `npm run db:prepare` after changing the rule block in `lib/config.ts`.
 3. Review `001_booking_guards.sql` and `002_trigger_permissions.sql`, then execute them in order in the matching Supabase project's SQL Editor. The main migration runs in one transaction, checks the expected schema, and is safe to reapply. Both have already been applied to the connected project during implementation.
 4. Run `verify.sql`. The rules function should report `ready: true`, five tables should have RLS enabled, the exclusion constraint should still exist, and the authenticated role should only be able to update `full_name` and `phone` on profiles.
-5. Run `npm run backend:check`. This reads public settings and readiness only. It creates no bookings or accounts.
+5. Run `seed-courts.sql` to ensure Court 1, Court 2, and Court 3 exist. It preserves existing court IDs and bookings and can be rerun safely. All three courts are active in the connected project.
+6. Run `npm run backend:check`. This reads public settings and readiness only. It creates no bookings or accounts.
+
+For immediate email/password signup, open Supabase Authentication → Sign In / Providers and turn **Confirm email** off. This hosted Auth setting is separate from SQL and must also be configured in any new Supabase project. Signup signs players in immediately when this setting is off; password recovery still uses email.
 
 The guards serialize booking and block writes, check active courts and opening hours, enforce whole-hour durations, the booking horizon, lead time, upcoming-booking limit, and player cancellation window. The existing exclusion constraint remains the final protection against two bookings for the same court and time. Staff can cancel late bookings but cannot move or reactivate a cancelled booking; create a new one instead.
 

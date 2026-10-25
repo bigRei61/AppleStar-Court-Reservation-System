@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured, publicSupabaseConfig } from "@/lib/supabase-config";
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
+  if (request.nextUrl.pathname === "/api/availability") return response;
   if (!isSupabaseConfigured()) return response;
   const { url, key } = publicSupabaseConfig();
   const supabase = createServerClient(url, key, {

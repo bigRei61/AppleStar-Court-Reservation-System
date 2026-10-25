@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight, CalendarDays, Check, Clock3, MapPin } from "l
 import { Button } from "@/components/ui/button";
 import { manilaDate, lastBookingDate, dayInstant, formatDate, formatTime } from "@/lib/time";
 import { slotsForDay, slotState, hoursForDay } from "@/lib/availability";
+import { availabilityReader } from "@/lib/availability-client";
 import type { Availability } from "@/lib/types";
 import { useClientReady } from "@/lib/client-ready";
 
@@ -25,8 +26,8 @@ export function TodayPreview() {
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     let live = true;
-    async function load() { try { const response = await fetch(`/api/availability?date=${manilaDate()}`, { cache: "no-store" }); if (response.ok && live) setData(await response.json()); } catch { /* Keep the booking link available during outages. */ } finally { if (live) setLoaded(true); } }
-    void load(); const timer = setInterval(load, 30_000); return () => { live = false; clearInterval(timer); };
+    async function load(force = false) { try { const result = await availabilityReader.load(manilaDate(), force); if (live) setData(result); } catch { /* Keep the last successful times during a brief outage. */ } finally { if (live) setLoaded(true); } }
+    void load(); const timer = setInterval(() => { if (document.visibilityState !== "hidden") void load(true); }, 30_000); return () => { live = false; clearInterval(timer); };
   }, []);
   if (!loaded) return <div className="today-grid" role="status" aria-label="Loading today’s times">{[0,1,2,3].map((i) => <div className="skeleton" style={{ height: 157 }} key={i} />)}</div>;
   const openings = data ? slotsForDay(data.hours, data.date).flatMap((start) => data.courts.filter((court) => slotState(court.id, start, data.unavailable) === "available").map((court) => ({ start, court }))).slice(0, 4) : [];
@@ -36,7 +37,7 @@ export function TodayPreview() {
 
 export function VenueHours() {
   const [text, setText] = useState("Check opening hours when you book");
-  useEffect(() => { fetch(`/api/availability?date=${manilaDate()}`).then((r) => r.ok ? r.json() : null).then((data: Availability | null) => { if (!data) return; const hours = hoursForDay(data.hours, data.date); setText(hours ? `Today · ${formatTime(dayInstant(data.date, hours.open_time))} – ${formatTime(dayInstant(data.date, hours.close_time))}` : "Closed today · See other days"); }).catch(() => {}); }, []);
+  useEffect(() => { let live = true; availabilityReader.load(manilaDate()).then((data) => { if (!live) return; const hours = hoursForDay(data.hours, data.date); setText(hours ? `Today · ${formatTime(dayInstant(data.date, hours.open_time))} – ${formatTime(dayInstant(data.date, hours.close_time))}` : "Closed today · See other days"); }).catch(() => {}); return () => { live = false; }; }, []);
   return <span>{text}</span>;
 }
 
