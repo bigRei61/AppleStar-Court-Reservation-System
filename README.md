@@ -2,7 +2,7 @@
 
 A mobile-first court booking app built with Next.js 16.4.3, React 19, TypeScript, Tailwind 4, locally owned shadcn/ui controls, Supabase Auth/Postgres, and Resend. Players choose a court and time, then pay at the venue. No online payments or paid services are provisioned.
 
-The visual direction comes from the supplied Soccer template: dark sports framing, bold typography, a large court hero, and a lime accent. The interface is rebuilt for pickleball; the template's soccer photos, JavaScript, and CSS are not bundled. The hero is a generated illustration/photo asset, not a photograph of the actual venue. The venue's exact supplied Apple Maps pin is used for directions; no street address or phone is invented.
+The visual direction comes from the supplied Soccer template: dark sports framing, bold typography, and a large court hero. The venue's supplied paddle logo appears in the header, footer, and browser icon. The palette uses `#abdbe3` with deep blue surfaces and matching selection, focus, and hover colors in light and dark mode. The interface is rebuilt for pickleball; the template's soccer photos, JavaScript, and CSS are not bundled. The hero is a generated illustration/photo asset, not a photograph of the actual venue. The venue's exact supplied Apple Maps pin is used for directions; no street address or phone is invented.
 
 ## Run locally
 

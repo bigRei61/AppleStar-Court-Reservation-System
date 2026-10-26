@@ -3,9 +3,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight, CalendarDays, House, LayoutDashboard, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { venue } from "@/lib/config";
+import { Brand } from "@/components/brand";
 
-export function Brand() { return <Link href="/" className="brand" aria-label={`${venue.name} home`}><span className="brand-symbol" aria-hidden="true"><span /><span /><span /></span><span>{venue.shortName}<small>PICKLEBALL CLUB</small></span></Link>; }
 export function SiteNav({ signedIn = false, admin = false }: { signedIn?: boolean; admin?: boolean }) {
   const path = usePathname();
   return <NavContent path={path} signedIn={signedIn} admin={admin} />;
