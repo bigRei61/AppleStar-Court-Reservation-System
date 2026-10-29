@@ -1,3 +1,5 @@
+import { resolveSiteUrl } from "@/lib/site-url";
+
 // Run npm run db:prepare after editing this block, then review/apply its SQL.
 export const bookingRules = /* rules:start */ {
   "slotMinutes": 60,
@@ -19,4 +21,9 @@ export const venue = {
   email: process.env.COURT_NOTIFICATION_EMAIL || "",
   timeZone: "Asia/Manila",
 };
-export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.URL || "http://localhost:3000").replace(/\/$/, "");
+export const siteUrl = resolveSiteUrl({
+  configuredUrl: process.env.NEXT_PUBLIC_SITE_URL,
+  productionHost: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  platformUrl: process.env.URL,
+  production: process.env.NODE_ENV === "production",
+});

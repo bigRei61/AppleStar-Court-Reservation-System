@@ -67,6 +67,8 @@ Review and apply the regenerated SQL to keep server/database rules aligned. If g
 6. Optionally enable Google in Supabase, configure the provider callback, then set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true`. Until then the Google option is hidden.
 7. Import [AppleStar-Court-Reservation-System](https://github.com/bigRei61/AppleStar-Court-Reservation-System) into Vercel with the repository root (`./`) as Root Directory and `master` as the production branch. Use Node.js 24.x. `vercel.json` explicitly selects Next.js, runs `npm run build`, and uses `.next` as the output directory, overriding conflicting dashboard framework/build/output settings. Add the Supabase URL and public key in Vercel, then set `NEXT_PUBLIC_SITE_URL` to the stable production address and redeploy. The current production address is `https://apple-star-court-reservation-system.vercel.app`. Update Supabase's Site URL to that origin and allow its `/auth/callback**` redirect, keeping the localhost callback if local development is needed. If static images load but pages return Vercel's `NOT_FOUND`, make sure the production deployment includes `vercel.json` and is built from the repository root. `netlify.toml` is retained for the earlier Netlify setup; Vercel uses `vercel.json`.
 
+See [Production authentication links](supabase/auth-redirects.md) for the exact hosted Site URL, allowed callbacks, and Vercel environment setting. Production email links fall back to the live venue domain, never localhost; an explicit HTTPS custom domain can still override it. Password-reset callbacks stay on the browser's current origin so the PKCE session works correctly.
+
 For password recovery across tabs or devices, the callback supports token hashes as well as PKCE codes. Supabase's recovery email template can use the app's supplied redirect URL:
 
 ```html
@@ -78,7 +80,7 @@ The app supplies `/auth/callback?next=...` as `RedirectTo` for recovery, so the 
 
 ## Verification and phone checks
 
-The production build, TypeScript check, and 22 unit tests passed, including availability request deduplication, retries, timeouts, cache expiry, and protection against stale responses after a booking. Twelve database regression groups passed against the connected project and rolled their fixtures back. The connected project now has three active courts, seven opening-hour records, anonymous availability, enabled RLS on all five tables, and ready booking guards.
+The production build, TypeScript check, and 28 unit tests passed, including availability request deduplication, retries, timeouts, cache expiry, protection against stale responses after a booking, and production email URL resolution that rejects localhost fallbacks. Twelve database regression groups passed against the connected project and rolled their fixtures back. The connected project now has three active courts, seven opening-hour records, anonymous availability, enabled RLS on all five tables, and ready booking guards.
 
 Responsive browser checks covered widths from 320px to 1440px. Home, authentication, rules, and booking screens have no page-wide horizontal overflow. The actual account, booking-history, and admin components were also checked with sample data at phone and tablet sizes. Date/court/time selection and the booking review sheet were exercised in the browser. Mobile controls have larger touch targets, form fields avoid focus zoom, and admin tables become labelled cards. The weekly calendar scrolls within its own panel.
 
