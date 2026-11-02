@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { SiteNav, SiteNavFallback } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
+import { AuthSessionProvider } from "@/components/auth-session";
 import { getViewer } from "@/lib/auth";
 import { venue } from "@/lib/config";
 import "./globals.css";
@@ -18,11 +19,11 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
   themeColor: "#abdbe3",
 };
-async function Navigation() { const viewer = await getViewer(); return <SiteNav signedIn={Boolean(viewer)} admin={Boolean(viewer?.profile?.is_admin)} />; }
+async function Navigation() { const viewer = await getViewer(); return <SiteNav userId={viewer?.user.id} admin={Boolean(viewer?.profile?.is_admin)} />; }
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
-      <body><a className="skip-link" href="#main">Skip to content</a><Suspense fallback={<SiteNavFallback />}><Navigation /></Suspense><main id="main">{children}</main><SiteFooter /></body>
+      <body><a className="skip-link" href="#main">Skip to content</a><AuthSessionProvider><Suspense fallback={<SiteNavFallback />}><Navigation /></Suspense><main id="main">{children}</main><SiteFooter /></AuthSessionProvider></body>
     </html>
   );
 }

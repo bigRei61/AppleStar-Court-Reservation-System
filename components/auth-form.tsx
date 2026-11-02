@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -18,7 +18,6 @@ const labels = { login: ["WELCOME BACK", "Back for another game?", "Log in and m
 
 export function AuthForm({ mode }: { mode: Mode }) {
   const params = useSearchParams();
-  const router = useRouter();
   const next = safeNext(params.get("next"));
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -44,13 +43,15 @@ export function AuthForm({ mode }: { mode: Mode }) {
       if (mode === "signup") {
         const { data, error: signupError } = await supabase.auth.signUp({ email: values.email.trim(), password: values.password, options: { data: { full_name: values.full_name.trim(), phone: normalizePhone(values.phone) } } });
         if (signupError) { setError(signupError.status === 429 ? "A few too many tries. Please wait a moment and try again." : "We couldn’t create your account. Try again, or log in if you already have one."); return; }
-        if (data.session) { router.push(next); router.refresh(); return; }
+        // Browser-written cookies do not invalidate Next's prefetched pages or
+        // persistent layouts. Start a fresh document with the saved session.
+        if (data.session) { window.location.replace(next); return; }
         setError("We couldn’t finish signing you in. Please try logging in or contact the venue for help.");
       } else if (mode === "login") {
         const { data, error: loginError } = await supabase.auth.signInWithPassword({ email: values.email.trim(), password: values.password });
         if (loginError) { setError("That email or password isn’t right. Try again or reset your password."); return; }
         const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", data.user.id).single();
-        router.push(params.has("next") ? next : profile?.is_admin ? "/admin" : "/book"); router.refresh();
+        window.location.replace(params.has("next") ? next : profile?.is_admin ? "/admin" : "/book");
       } else if (mode === "forgot") {
         const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(values.email.trim(), { redirectTo: callback("/reset-password") });
         if (recoveryError) { setError(recoveryError.status === 429 ? "Too many reset requests. Please wait before trying again." : "We couldn’t send a reset link right now. Please try again later or contact the venue."); return; }
@@ -58,7 +59,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       } else {
         const { error: resetError } = await supabase.auth.updateUser({ password: values.password });
         if (resetError) { setError("This reset link may have expired. Request a new link and try again."); return; }
-        router.push("/account?password=updated"); router.refresh();
+        window.location.replace("/account?password=updated");
       }
     } catch { setError("We couldn’t connect. Your details are still here—please try again."); }
   }

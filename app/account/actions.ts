@@ -1,6 +1,5 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
 import { profileSchema } from "@/lib/validation";
@@ -22,4 +21,10 @@ export async function changePassword(password: string): Promise<ActionResult> {
   if (error) return { ok: false, error: "We couldn’t change your password. Try signing in again, or use Forgot password." };
   return { ok: true, data: undefined };
 }
-export async function signOut() { const client = await createClient(); await client.auth.signOut(); revalidatePath("/", "layout"); redirect("/login"); }
+export async function signOut(): Promise<ActionResult> {
+  const client = await createClient();
+  const { error } = await client.auth.signOut();
+  if (error) return { ok: false, error: "We couldn’t log you out. Please try again." };
+  revalidatePath("/", "layout");
+  return { ok: true, data: undefined };
+}
