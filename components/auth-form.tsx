@@ -21,6 +21,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const next = safeNext(params.get("next"));
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [existingAccount, setExistingAccount] = useState(false);
   const [sent, setSent] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const { register, handleSubmit, setError: setFieldError, control, formState: { errors, isSubmitting } } = useForm<Fields>({ defaultValues: { full_name: "", phone: "", email: "", password: "", confirm: "", agree: false } });
@@ -29,6 +30,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
   async function submit(values: Fields) {
     setError("");
+    setExistingAccount(false);
     if (mode !== "reset" && !emailSchema.safeParse(values.email.trim()).success) { setFieldError("email", { message: "Enter a valid email address." }); return; }
     if (mode === "signup") {
       if (values.full_name.trim().length < 2) { setFieldError("full_name", { message: "Enter your full name." }); return; }
@@ -42,7 +44,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
       const supabase = createClient();
       if (mode === "signup") {
         const { data, error: signupError } = await supabase.auth.signUp({ email: values.email.trim(), password: values.password, options: { data: { full_name: values.full_name.trim(), phone: normalizePhone(values.phone) } } });
-        if (signupError) { setError(signupError.status === 429 ? "A few too many tries. Please wait a moment and try again." : "We couldn’t create your account. Try again, or log in if you already have one."); return; }
+        if (signupError) {
+          const duplicate = signupError.code === "user_already_exists" || signupError.code === "email_exists";
+          setExistingAccount(duplicate);
+          setError(duplicate ? "This email already has an account. Log in or reset your password." : signupError.status === 429 ? "A few too many tries. Please wait a moment and try again." : "We couldn’t create your account. Please try again or contact the venue for help.");
+          return;
+        }
         // Browser-written cookies do not invalidate Next's prefetched pages or
         // persistent layouts. Start a fresh document with the saved session.
         if (data.session) { window.location.replace(next); return; }
@@ -70,7 +77,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   }
   const [eyebrow, title, description, submitLabel] = labels[mode];
   if (sent) return <div className="auth-form"><div className="success-symbol" style={{ marginLeft: 0 }}><Mail size={27} /></div><p className="eyebrow">LET’S GET YOU BACK IN</p><h1>Check your email.</h1><p>If that email has an account, you’ll receive a reset link. Check your inbox and spam folder, and open the latest link in this browser.</p><Button asChild className="full-width"><Link href="/login">Back to log in</Link></Button></div>;
-  return <div className="auth-form"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{description}</p>{params.get("error") && <Message error>That link has expired or couldn’t be verified. Please try again.</Message>}{params.get("next") === "/book" && <Message>Your court selection is saved. Log in to finish booking.</Message>}{error && <Message error>{error}</Message>}<form onSubmit={handleSubmit(submit)} noValidate>
+  return <div className="auth-form"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{description}</p>{params.get("error") && <Message error>That link has expired or couldn’t be verified. Please try again.</Message>}{params.get("next") === "/book" && <Message>Your court selection is saved. Log in to finish booking.</Message>}{error && <Message error>{error}{existingAccount && <p className="small" style={{ marginBottom: 0 }}><Link className="inline-link" href={`/login?next=${encodeURIComponent(next)}`}>Log in</Link>{" · "}<Link className="inline-link" href="/forgot-password">Reset password</Link></p>}</Message>}<form onSubmit={handleSubmit(submit)} noValidate>
     {mode === "signup" && <><div className="field"><label htmlFor="full_name">Full name</label><Input id="full_name" autoComplete="name" maxLength={100} placeholder="Juan dela Cruz" aria-invalid={Boolean(errors.full_name)} aria-describedby="full-name-error" {...register("full_name")} /><FieldError id="full-name-error" message={errors.full_name?.message} /></div><div className="field"><label htmlFor="phone">Mobile number</label><Input id="phone" type="tel" autoComplete="tel" placeholder="0917 123 4567" aria-invalid={Boolean(errors.phone)} aria-describedby="phone-error" {...register("phone")} /><FieldError id="phone-error" message={errors.phone?.message} /></div></>}
     {mode !== "reset" && <div className="field"><label htmlFor="email">Email address</label><Input id="email" type="email" autoComplete="email" maxLength={254} placeholder="you@example.com" aria-invalid={Boolean(errors.email)} aria-describedby="email-error" {...register("email")} /><FieldError id="email-error" message={errors.email?.message} /></div>}
     {mode !== "forgot" && <div className="field"><label htmlFor="password">{mode === "reset" ? "New password" : "Password"}</label><div className="password-wrap"><Input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} aria-invalid={Boolean(errors.password)} aria-describedby="password-error password-hint" {...register("password")} /><button type="button" className="password-toggle" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div><FieldError id="password-error" message={errors.password?.message} /><p id="password-hint" className="field-hint">{mode === "login" ? <Link href="/forgot-password" className="inline-link">Forgot password?</Link> : password.length === 0 ? "At least 8 characters. A longer password is stronger." : password.length < 8 ? `${8 - password.length} more characters needed` : password.length >= 12 && /[\d\W]/.test(password) ? "Strong password. You’re good to go." : "Good start. Add more words or numbers for strength."}</p></div>}
